@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+
 import '../models/animal_models.dart';
 import '../services/api_services.dart';
 
@@ -14,6 +16,7 @@ class DetalleAnimalScreen extends StatefulWidget {
 
 class _DetalleAnimalScreenState
     extends State<DetalleAnimalScreen> {
+
   final _apiService = ApiService();
 
   Map<String, dynamic>? _historial;
@@ -25,10 +28,8 @@ class _DetalleAnimalScreenState
     _cargarDatosMedicos();
   }
 
-  // ================================
-  // Cargar historial desde backend
-  // ================================
   void _cargarDatosMedicos() async {
+
     final datos =
         await _apiService.obtenerHistorial(
             widget.animal.codigoQR);
@@ -39,10 +40,8 @@ class _DetalleAnimalScreenState
     });
   }
 
-  // ================================
-  // Obtener estado dinámico
-  // ================================
   String _obtenerEstadoActual() {
+
     var clinico =
         _historial?['clinico'] as List? ?? [];
 
@@ -54,27 +53,34 @@ class _DetalleAnimalScreenState
     return widget.animal.estadoSalud;
   }
 
-  // ================================
-  // FORMULARIO
-  // ================================
+
+
   void _mostrarFormularioAccion() {
+
     String tipoAccion = "Vacuna";
 
     final _controller1 =
         TextEditingController();
+
     final _controller2 =
         TextEditingController();
 
     showModalBottomSheet(
+
       context: context,
       isScrollControlled: true,
+
       builder: (context) {
+
         return StatefulBuilder(
+
           builder: (
-            BuildContext context,
-            StateSetter setModalState,
+            context,
+            setModalState,
           ) {
+
             return Padding(
+
               padding: EdgeInsets.only(
                 bottom:
                     MediaQuery.of(context)
@@ -84,17 +90,27 @@ class _DetalleAnimalScreenState
                 right: 20,
                 top: 20,
               ),
+
               child: Column(
+
                 mainAxisSize:
                     MainAxisSize.min,
+
                 children: [
-                  Text(
-                    "Registrar Actividad Médica",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+
+                  Row(
+                    children: [
+                      Icon(Icons.medical_services),
+                      SizedBox(width: 8),
+                      Text(
+                        "Registrar Actividad",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
 
                   DropdownButton<String>(
@@ -104,16 +120,18 @@ class _DetalleAnimalScreenState
                       "Vacuna",
                       "Revisión"
                     ].map((value) {
+
                       return DropdownMenuItem(
                         value: value,
                         child: Text(value),
                       );
+
                     }).toList(),
-                    onChanged:
-                        (nuevoValor) {
+
+                    onChanged: (v) {
+
                       setModalState(() {
-                        tipoAccion =
-                            nuevoValor!;
+                        tipoAccion = v!;
                       });
                     },
                   ),
@@ -126,8 +144,10 @@ class _DetalleAnimalScreenState
                       labelText:
                           tipoAccion ==
                                   "Vacuna"
-                              ? "Nombre de la Vacuna"
-                              : "Observaciones Médicas",
+                              ? "Vacuna"
+                              : "Observaciones",
+                      prefixIcon:
+                          Icon(Icons.edit),
                     ),
                   ),
 
@@ -139,47 +159,60 @@ class _DetalleAnimalScreenState
                       labelText:
                           tipoAccion ==
                                   "Vacuna"
-                              ? "Dosis (ej: 5ml)"
+                              ? "Dosis"
                               : "Estado",
+                      prefixIcon:
+                          Icon(Icons.info),
                     ),
                   ),
 
                   SizedBox(height: 20),
 
-                  ElevatedButton(
-                    child: Text(
-                        "Guardar en Historial"),
-                    onPressed:
-                        () async {
+                  ElevatedButton.icon(
+
+                    icon:
+                        Icon(Icons.save),
+
+                    label:
+                        Text("Guardar"),
+
+                    onPressed: () async {
+
                       bool exito =
                           false;
 
                       if (tipoAccion ==
                           "Vacuna") {
+
                         exito =
                             await _apiService
                                 .registrarVacuna(
+
                           widget.animal
                               .codigoQR,
-                          _controller1
-                              .text,
-                          _controller2
-                              .text,
+
+                          _controller1.text,
+
+                          _controller2.text,
                         );
+
                       } else {
+
                         exito =
                             await _apiService
                                 .registrarRevision(
+
                           widget.animal
                               .codigoQR,
-                          _controller1
-                              .text,
-                          _controller2
-                              .text,
+
+                          _controller1.text,
+
+                          _controller2.text,
                         );
                       }
 
                       if (exito) {
+
                         Navigator.pop(
                             context);
 
@@ -188,9 +221,10 @@ class _DetalleAnimalScreenState
                         ScaffoldMessenger.of(
                                 context)
                             .showSnackBar(
+
                           SnackBar(
                             content: Text(
-                                "✅ Registro médico actualizado"),
+                                "Actualizado"),
                           ),
                         );
                       }
@@ -207,15 +241,18 @@ class _DetalleAnimalScreenState
     );
   }
 
-  // ================================
-  // UI
-  // ================================
+
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+
       appBar: AppBar(
         title: Text(
             "Ficha: ${widget.animal.codigoQR}"),
+        backgroundColor:
+            Colors.blueGrey,
       ),
 
       body: _cargando
@@ -224,33 +261,102 @@ class _DetalleAnimalScreenState
                   CircularProgressIndicator(),
             )
           : ListView(
+
               padding:
                   EdgeInsets.all(16),
+
               children: [
+
                 _buildInfoCard(),
 
                 SizedBox(height: 20),
 
-                Text(
-                  "💉 Historial de Vacunas",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight:
-                        FontWeight.bold,
+                /// QR
+
+                Card(
+                  child: Padding(
+
+                    padding:
+                        EdgeInsets.all(16),
+
+                    child: Column(
+
+                      children: [
+
+                        Row(
+                          children: [
+
+                            Icon(Icons.qr_code),
+
+                            SizedBox(width: 8),
+
+                            Text(
+                              "Código QR",
+                              style:
+                                  TextStyle(
+                                fontSize: 18,
+                                fontWeight:
+                                    FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: 10),
+
+                        QrImageView(
+                          data: widget
+                              .animal.codigoQR,
+                          size: 200,
+                          backgroundColor:
+                              Colors.white,
+                        ),
+
+                        Text(
+                          widget
+                              .animal.codigoQR,
+                        ),
+                      ],
+                    ),
                   ),
+                ),
+
+                SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    Icon(Icons.vaccines),
+                    SizedBox(width: 8),
+                    Text(
+                      "Vacunas",
+                      style:
+                          TextStyle(
+                        fontSize: 18,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
 
                 _buildListaVacunas(),
 
                 SizedBox(height: 20),
 
-                Text(
-                  "📋 Evolución de Salud",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Icon(Icons.favorite),
+                    SizedBox(width: 8),
+                    Text(
+                      "Salud",
+                      style:
+                          TextStyle(
+                        fontSize: 18,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
 
                 _buildListaClinica(),
@@ -259,67 +365,61 @@ class _DetalleAnimalScreenState
 
       floatingActionButton:
           FloatingActionButton.extended(
+
         onPressed:
             _mostrarFormularioAccion,
+
+        icon:
+            Icon(Icons.medical_services),
+
         label:
-            Text("Registrar Acción"),
-        icon: Icon(
-            Icons.medical_services),
-        backgroundColor:
-            Colors.redAccent,
+            Text("Registrar"),
       ),
     );
   }
 
-  // ================================
-  // CARD INFO
-  // ================================
+
+
   Widget _buildInfoCard() {
+
     String estado =
         _obtenerEstadoActual();
 
     return Card(
-      elevation: 4,
-      shape:
-          RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(
-                12),
-      ),
-      child: ListTile(
-        title: Text(
-          "Raza: ${widget.animal.raza}",
-          style: TextStyle(
-            fontWeight:
-                FontWeight.bold,
-            fontSize: 18,
+
+      child: Column(
+
+        children: [
+
+          ListTile(
+            leading:
+                Icon(Icons.pets),
+            title: Text(
+                "Raza: ${widget.animal.raza}"),
           ),
-        ),
-        subtitle: Padding(
-          padding:
-              EdgeInsets.only(
-                  top: 8),
-          child: Text(
-            "Peso actual: ${widget.animal.peso} kg\n"
-            "Estado Actual: $estado",
+
+          ListTile(
+            leading:
+                Icon(Icons.monitor_weight),
+            title: Text(
+                "Peso: ${widget.animal.peso}"),
           ),
-        ),
-        trailing: Icon(
-          Icons.analytics,
-          size: 40,
-          color:
-              estado == "Crítico"
-                  ? Colors.red
-                  : Colors.green,
-        ),
+
+          ListTile(
+            leading:
+                Icon(Icons.health_and_safety),
+            title:
+                Text("Estado: $estado"),
+          ),
+        ],
       ),
     );
   }
 
-  // ================================
-  // VACUNAS
-  // ================================
+
+
   Widget _buildListaVacunas() {
+
     var vacunas =
         _historial?['vacunas']
                 as List? ??
@@ -327,30 +427,34 @@ class _DetalleAnimalScreenState
 
     if (vacunas.isEmpty)
       return Text(
-          "No hay vacunas registradas.");
+          "No hay vacunas");
 
     return Column(
+
       children: vacunas.map(
+
         (v) {
+
           return ListTile(
-            leading: Icon(
-              Icons.check_circle,
-              color: Colors.blue,
-            ),
-            title: Text(v['tipo']),
-            subtitle: Text(
-              "Dosis: ${v['dosis']} - Fecha: ${v['fecha_aplicacion'].toString().split('T')[0]}",
-            ),
+
+            leading:
+                Icon(Icons.vaccines),
+
+            title:
+                Text(v['tipo']),
+
+            subtitle:
+                Text(v['dosis']),
           );
         },
       ).toList(),
     );
   }
 
-  // ================================
-  // CLINICO
-  // ================================
+
+
   Widget _buildListaClinica() {
+
     var clinico =
         _historial?['clinico']
                 as List? ??
@@ -358,21 +462,24 @@ class _DetalleAnimalScreenState
 
     if (clinico.isEmpty)
       return Text(
-          "Sin observaciones médicas.");
+          "Sin datos");
 
     return Column(
+
       children: clinico.map(
+
         (c) {
-          return Card(
-            color:
-                Colors.grey[100],
-            child: ListTile(
-              title: Text(
-                  "Estado: ${c['estado_salud']}"),
-              subtitle: Text(
-                  "${c['observaciones']}\nPor: ${c['veterinario']}"),
-              isThreeLine: true,
-            ),
+
+          return ListTile(
+
+            leading:
+                Icon(Icons.description),
+
+            title:
+                Text(c['estado_salud']),
+
+            subtitle:
+                Text(c['observaciones']),
           );
         },
       ).toList(),

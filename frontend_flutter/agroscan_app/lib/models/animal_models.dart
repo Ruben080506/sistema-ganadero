@@ -12,8 +12,8 @@ class Vacuna {
       Map<String, dynamic> map) {
 
     return Vacuna(
-      tipo: map['tipo'] ?? '',
-      dosis: map['dosis'] ?? '',
+      tipo: map['tipo']?.toString() ?? '',
+      dosis: map['dosis']?.toString() ?? '',
     );
   }
 
@@ -41,17 +41,25 @@ class RevisionMedica {
       Map<String, dynamic> map) {
 
     return RevisionMedica(
+
       observaciones:
-          map['observaciones'] ?? '',
+          map['observaciones']?.toString() ?? '',
+
       estadoSalud:
-          map['estado_salud'] ?? '',
+          map['estado_salud']?.toString() ??
+          map['estadoSalud']?.toString() ??
+          '',
+
     );
   }
 
   Map<String, dynamic> toMap() {
+
     return {
+
       'observaciones': observaciones,
       'estado_salud': estadoSalud,
+
     };
   }
 }
@@ -104,13 +112,14 @@ class Animal {
       'edad': edad,
       'estadoSalud': estadoSalud,
       'sincronizado': sincronizado,
+
     };
   }
 
 
 
   // ============================================
-  // DESDE SQLITE / MONGODB / API
+  // BLINDAJE TOTAL (Mongo / API / SQLite)
   // ============================================
 
   factory Animal.fromMap(
@@ -118,34 +127,65 @@ class Animal {
 
     return Animal(
 
+      /// ✅ ID seguro
+
       codigoQR:
-          map['codigoQR'] ?? 'S/N',
+          map['codigoQR']?.toString() ??
+          map['codigo']?.toString() ??
+          map['id']?.toString() ??
+          map['_id']?.toString() ??
+          'SIN_ID',
+
+
+      /// ✅ texto seguro
 
       raza:
-          map['raza'] ?? 'Mestiza',
+          map['raza']?.toString() ??
+          'N/A',
+
+
+      /// ✅ double seguro
 
       peso:
-          (map['peso'] ?? 0.0)
-              .toDouble(),
+          double.tryParse(
+              map['peso'].toString()
+          ) ?? 0.0,
+
+
+      /// ✅ int seguro
 
       edad:
-          map['edad'] ?? 0,
+          int.tryParse(
+              map['edad'].toString()
+          ) ?? 0,
+
+
+      /// ✅ estado seguro
 
       estadoSalud:
-          map['estadoSalud']
-              ?? 'Excelente',
+          map['estadoSalud']?.toString() ??
+          map['estado_salud']?.toString() ??
+          'Bueno',
 
-      // si viene de la nube → sincronizado
+
+      /// ✅ sync seguro
+
       sincronizado:
-          map['sincronizado'] ?? 1,
+          int.tryParse(
+              map['sincronizado']
+                  .toString()
+          ) ?? 1,
 
 
-      // ✅ PROTECCIÓN MONGODB
+      /// ✅ listas seguras
+
       historialVacunas:
           (map['historial_vacunas']
                   as List?)
-              ?.map((v) =>
-                  Vacuna.fromMap(v))
+              ?.map(
+                (v) =>
+                    Vacuna.fromMap(v),
+              )
               .toList()
           ?? [],
 
@@ -153,9 +193,11 @@ class Animal {
       historialClinico:
           (map['historial_clinico']
                   as List?)
-              ?.map((r) =>
-                  RevisionMedica
-                      .fromMap(r))
+              ?.map(
+                (v) =>
+                    RevisionMedica
+                        .fromMap(v),
+              )
               .toList()
           ?? [],
     );
