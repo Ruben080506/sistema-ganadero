@@ -197,3 +197,41 @@ async def obtener_historial_completo(
         "vacunas": animal["historial_vacunas"],
         "clinico": animal["historial_clinico"]
     }
+
+
+# ---------------------------------
+# Actualizar peso del animal
+# ---------------------------------
+@router.put("/{codigoQR}/peso")
+async def actualizar_peso(
+    codigoQR: str,
+    data: dict
+):
+
+    nuevo_peso = data.get("peso")
+
+    if nuevo_peso is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Peso requerido"
+        )
+
+    resultado = await database["ganado"].update_one(
+        {"codigoQR": codigoQR},
+        {
+            "$set": {
+                "peso": nuevo_peso,
+                "ultima_modificacion": datetime.now()
+            }
+        }
+    )
+
+    if resultado.modified_count == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="No se pudo actualizar el peso"
+        )
+
+    return {
+        "mensaje": f"Peso actualizado a {nuevo_peso}"
+    }

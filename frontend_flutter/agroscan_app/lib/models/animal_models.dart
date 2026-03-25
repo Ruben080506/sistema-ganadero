@@ -70,7 +70,7 @@ class Animal {
 
   final String codigoQR;
   final String raza;
-  final double peso;
+  double peso;
   final int edad;
   final String estadoSalud;
 

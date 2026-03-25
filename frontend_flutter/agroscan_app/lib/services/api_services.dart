@@ -26,7 +26,7 @@ class ApiService {
       if (response.statusCode == 200) {
 
         print("BODY RECIBIDO:");
-        print(response.body);   // ✅ DEBUG IMPORTANTE
+        print(response.body);
 
         List<dynamic> body =
             jsonDecode(response.body);
@@ -256,5 +256,47 @@ class ApiService {
       return false;
     }
   }
+
+
+  // =========================================================
+  // 6. ACTUALIZAR PESO (AÑADIDO)
+  // =========================================================
+
+  Future<bool> actualizarPeso(
+  String codigoQR,
+  double peso,
+) async {
+
+  final url =
+      Uri.parse("$baseUrl/$codigoQR/peso");
+
+  try {
+
+    final response =
+        await http.put(
+
+      url,
+
+      headers: {
+        "Content-Type":
+            "application/json"
+      },
+
+      body: jsonEncode({
+        "peso": peso,
+      }),
+    );
+
+    print(response.statusCode);
+    print(response.body);
+
+    return response.statusCode == 200;
+
+  } catch (e) {
+
+    print(e);
+    return false;
+  }
+}
 
 }

@@ -53,10 +53,10 @@ class _DetalleAnimalScreenState
     return widget.animal.estadoSalud;
   }
 
+  
 
 
   void _mostrarFormularioAccion() {
-
     String tipoAccion = "Vacuna";
 
     final _controller1 =
@@ -241,6 +241,95 @@ class _DetalleAnimalScreenState
     );
   }
 
+  void _mostrarDialogoPeso() {
+
+  TextEditingController _pesoController =
+      TextEditingController(
+        text: widget.animal.peso.toString(),
+      );
+
+  showDialog(
+
+    context: context,
+
+    builder: (context) {
+
+      return AlertDialog(
+
+        title: Text(
+          "Actualizar Peso - ${widget.animal.codigoQR}",
+        ),
+
+        content: TextField(
+
+          controller: _pesoController,
+
+          keyboardType: TextInputType.number,
+
+          decoration: InputDecoration(
+            labelText: "Nuevo peso",
+            suffixText: "kg",
+          ),
+        ),
+
+        actions: [
+
+          TextButton(
+
+            onPressed: () {
+              Navigator.pop(context);
+            },
+
+            child: Text("Cancelar"),
+          ),
+
+          ElevatedButton(
+
+            onPressed: () async {
+
+              double? nuevoPeso =
+                  double.tryParse(
+                    _pesoController.text,
+                  );
+
+              if (nuevoPeso != null) {
+
+                bool exito =
+                    await _apiService
+                        .actualizarPeso(
+                  widget.animal.codigoQR,
+                  nuevoPeso,
+                );
+
+                if (exito) {
+
+                  setState(() {
+                    widget.animal.peso =
+                        nuevoPeso;
+                  });
+
+                  Navigator.pop(context);
+
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(
+
+                    SnackBar(
+                      content: Text(
+                        "✅ Peso actualizado",
+                      ),
+                    ),
+                  );
+                }
+              }
+            },
+
+            child: Text("Guardar"),
+          ),
+        ],
+      );
+    },
+  );
+}
 
 
   @override
@@ -403,6 +492,10 @@ class _DetalleAnimalScreenState
                 Icon(Icons.monitor_weight),
             title: Text(
                 "Peso: ${widget.animal.peso}"),
+                trailing: IconButton(
+                  icon: Icon(Icons.edit, color: Colors.blue),
+                  onPressed: _mostrarDialogoPeso,
+                ),
           ),
 
           ListTile(
