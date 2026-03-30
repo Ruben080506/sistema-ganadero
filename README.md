@@ -309,7 +309,7 @@ DATABASE_NAME=sistema_ganadero
 
 La documentación completa e interactiva está disponible en:
 
-**🔗 [https://sistema-ganadero-1.onrender.com/docs](https://sistema-ganadero-1.onrender.com/docs)**
+**🔗 [https://sistema-ganadero.onrender.com/docs](https://sistema-ganadero.onrender.com/docs)**
 
 **Endpoints principales:**
 
