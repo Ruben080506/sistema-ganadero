@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../database/db_helper.dart';
 import '../models/animal_models.dart';
+import '../services/api_services.dart';
+
 import 'detalle_animal_screen.dart';
+import 'escaner_qr_screen.dart';
 
 class HistorialScreen extends StatefulWidget {
   @override
@@ -13,38 +17,101 @@ class _HistorialScreenState
     extends State<HistorialScreen> {
 
   final _dbHelper = DBHelper();
+  final _apiService = ApiService();
 
   List<Animal> _animalesSincronizados = [];
 
 
+  // ============================================
+  // INIT
+  // ============================================
+
   @override
   void initState() {
     super.initState();
+
+    print("DEBUG: Entrando a la pantalla de Historial...");
+
     _cargarHistorial();
   }
 
 
   // ============================================
-  // CARGAR SOLO SINCRONIZADOS
+  // ESCANEO QR (NUEVO)
   // ============================================
 
-  void _cargarHistorial() async {
+  void _iniciarEscaneo() {
 
-    final listaSincronizada =
-        await _dbHelper
-            .obtenerSincronizados();
+    Navigator.push(
 
-    setState(() {
+      context,
 
-      _animalesSincronizados =
-          listaSincronizada;
+      MaterialPageRoute(
 
-    });
+        builder: (context) =>
+
+            EscanerQRScreen(
+              animales: _animalesSincronizados,
+            ),
+      ),
+    );
   }
 
 
   // ============================================
-  // REFRESCAR AL VOLVER A LA PESTAÑA
+  // SINCRONIZACIÓN FORZADA
+  // ============================================
+
+  void _cargarHistorial() async {
+
+    print("--- INTENTO DE CONEXIÓN INICIADO ---");
+
+    try {
+
+      List<Animal> desdeNube =
+          await _apiService.obtenerTodoElGanado();
+
+      print(
+          "--- DATOS RECIBIDOS API: ${desdeNube.length} animales ---");
+
+      if (desdeNube.isNotEmpty) {
+
+        setState(() {
+          _animalesSincronizados =
+              desdeNube;
+        });
+
+        for (var a in desdeNube) {
+
+          await _dbHelper.insertarAnimal(a);
+
+        }
+
+        final totalLocal =
+            await _dbHelper
+                .obtenerSincronizados();
+
+        print(
+            "--- AHORA SQLITE TIENE: ${totalLocal.length} animales ---");
+      }
+
+    } catch (e) {
+
+      print("Error: $e");
+
+      final local =
+          await _dbHelper
+              .obtenerSincronizados();
+
+      setState(() {
+        _animalesSincronizados = local;
+      });
+    }
+  }
+
+
+  // ============================================
+  // REFRESH
   // ============================================
 
   @override
@@ -55,7 +122,7 @@ class _HistorialScreenState
 
 
   // ============================================
-  // UI
+  // UI (MISMO DISEÑO)
   // ============================================
 
   @override
@@ -64,15 +131,12 @@ class _HistorialScreenState
     return Scaffold(
 
       appBar: AppBar(
-        title:
-            Text("Historial en la Nube"),
-        backgroundColor:
-            Colors.blueGrey,
+        title: Text("Historial en la Nube"),
+        backgroundColor: Colors.blueGrey,
       ),
 
       body:
-          _animalesSincronizados
-                  .isEmpty
+          _animalesSincronizados.isEmpty
               ? Center(
                   child: Text(
                     "No hay vacas sincronizadas",
@@ -81,15 +145,13 @@ class _HistorialScreenState
               : ListView.builder(
 
                   itemCount:
-                      _animalesSincronizados
-                          .length,
+                      _animalesSincronizados.length,
 
                   itemBuilder:
                       (context, index) {
 
                     final animal =
-                        _animalesSincronizados[
-                            index];
+                        _animalesSincronizados[index];
 
                     return ListTile(
 
@@ -101,11 +163,9 @@ class _HistorialScreenState
 
                           MaterialPageRoute(
 
-                            builder:
-                                (context) =>
-                                    DetalleAnimalScreen(
-                              animal:
-                                  animal,
+                            builder: (context) =>
+                                DetalleAnimalScreen(
+                              animal: animal,
                             ),
                           ),
                         );
@@ -113,8 +173,7 @@ class _HistorialScreenState
 
                       leading: Icon(
                         Icons.cloud_done,
-                        color:
-                            Colors.green,
+                        color: Colors.green,
                       ),
 
                       title: Text(
@@ -132,6 +191,18 @@ class _HistorialScreenState
                     );
                   },
                 ),
+
+      floatingActionButton:
+          FloatingActionButton(
+
+        onPressed: _iniciarEscaneo,
+
+        backgroundColor: Colors.orange,
+
+        child: Icon(
+          Icons.qr_code_scanner,
+        ),
+      ),
     );
   }
 }

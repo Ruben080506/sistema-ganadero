@@ -4,13 +4,12 @@ import '../models/animal_models.dart';
 
 class ApiService {
 
-  // ✅ IP de tu backend FastAPI
   static const String baseUrl =
       "http://192.168.100.17:8000/ganado";
 
 
   // =========================================================
-  // 1. OBTENER TODO EL GANADO DESDE MONGODB (GET /ganado)
+  // 1. OBTENER TODO EL GANADO
   // =========================================================
 
   Future<List<Animal>> obtenerTodoElGanado() async {
@@ -22,7 +21,12 @@ class ApiService {
         Uri.parse(baseUrl),
       );
 
+      print("STATUS: ${response.statusCode}");
+
       if (response.statusCode == 200) {
+
+        print("BODY RECIBIDO:");
+        print(response.body);
 
         List<dynamic> body =
             jsonDecode(response.body);
@@ -32,6 +36,9 @@ class ApiService {
                 Animal.fromMap(item))
             .toList();
       }
+
+      print("ERROR SERVER:");
+      print(response.body);
 
       return [];
 
@@ -46,7 +53,7 @@ class ApiService {
 
 
   // =========================================================
-  // 2. SINCRONIZAR ANIMALES (POST /ganado/sync)
+  // 2. SINCRONIZAR
   // =========================================================
 
   Future<bool> sincronizarConBackend(
@@ -70,6 +77,9 @@ class ApiService {
 
         body: jsonEncode(data),
       );
+
+      print("SYNC STATUS: ${response.statusCode}");
+      print("SYNC BODY: ${response.body}");
 
       if (response.statusCode == 200) {
 
@@ -96,7 +106,7 @@ class ApiService {
 
 
   // =========================================================
-  // 3. OBTENER HISTORIAL (GET /ganado/{qr}/historial)
+  // 3. HISTORIAL
   // =========================================================
 
   Future<Map<String, dynamic>?>
@@ -111,6 +121,9 @@ class ApiService {
           "$baseUrl/$qr/historial",
         ),
       );
+
+      print("HISTORIAL STATUS: ${response.statusCode}");
+      print("HISTORIAL BODY: ${response.body}");
 
       if (response.statusCode == 200) {
 
@@ -131,7 +144,7 @@ class ApiService {
 
 
   // =========================================================
-  // 4. REGISTRAR VACUNA (POST /ganado/{qr}/vacuna)
+  // 4. VACUNA
   // =========================================================
 
   Future<bool> registrarVacuna(
@@ -163,6 +176,9 @@ class ApiService {
         }),
       );
 
+      print("VACUNA STATUS: ${response.statusCode}");
+      print("VACUNA BODY: ${response.body}");
+
       if (response.statusCode == 200) {
 
         print("Vacuna guardada");
@@ -170,9 +186,6 @@ class ApiService {
         return true;
 
       } else {
-
-        print(
-            "Error vacuna: ${response.body}");
 
         return false;
       }
@@ -188,7 +201,7 @@ class ApiService {
 
 
   // =========================================================
-  // 5. REGISTRAR REVISION (POST /ganado/{qr}/revision)
+  // 5. REVISION
   // =========================================================
 
   Future<bool> registrarRevision(
@@ -220,6 +233,9 @@ class ApiService {
         }),
       );
 
+      print("REVISION STATUS: ${response.statusCode}");
+      print("REVISION BODY: ${response.body}");
+
       if (response.statusCode == 200) {
 
         print(
@@ -228,9 +244,6 @@ class ApiService {
         return true;
 
       } else {
-
-        print(
-            "Error revision: ${response.body}");
 
         return false;
       }
@@ -243,5 +256,47 @@ class ApiService {
       return false;
     }
   }
+
+
+  // =========================================================
+  // 6. ACTUALIZAR PESO (AÑADIDO)
+  // =========================================================
+
+  Future<bool> actualizarPeso(
+  String codigoQR,
+  double peso,
+) async {
+
+  final url =
+      Uri.parse("$baseUrl/$codigoQR/peso");
+
+  try {
+
+    final response =
+        await http.put(
+
+      url,
+
+      headers: {
+        "Content-Type":
+            "application/json"
+      },
+
+      body: jsonEncode({
+        "peso": peso,
+      }),
+    );
+
+    print(response.statusCode);
+    print(response.body);
+
+    return response.statusCode == 200;
+
+  } catch (e) {
+
+    print(e);
+    return false;
+  }
+}
 
 }
