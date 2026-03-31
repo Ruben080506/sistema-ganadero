@@ -5,6 +5,11 @@ import '../services/api_services.dart';
 import 'detalle_animal_screen.dart';
 
 class ListadoScreen extends StatefulWidget {
+
+  final String usuario;
+
+  const ListadoScreen({super.key, required this.usuario});
+
   @override
   _ListadoScreenState createState() => _ListadoScreenState();
 }
