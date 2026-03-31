@@ -5,7 +5,7 @@ import '../models/animal_models.dart';
 class ApiService {
 
   static const String baseUrl =
-      "http://192.168.100.17:8000/ganado";
+      "https://sistema-ganadero.onrender.com";
 
 
   // =========================================================
@@ -18,12 +18,12 @@ class ApiService {
 
       final response =
           await http.get(
-        Uri.parse(baseUrl),
+        Uri.parse("$baseUrl/ganado/"),
       );
 
       print("STATUS: ${response.statusCode}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
 
         print("BODY RECIBIDO:");
         print(response.body);
@@ -68,7 +68,7 @@ class ApiService {
 
       final response = await http.post(
 
-        Uri.parse("$baseUrl/sync"),
+        Uri.parse("$baseUrl/ganado/sync"),
 
         headers: {
           "Content-Type":
@@ -81,7 +81,7 @@ class ApiService {
       print("SYNC STATUS: ${response.statusCode}");
       print("SYNC BODY: ${response.body}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
 
         print(
             ">>> Sincronización exitosa <<<");
@@ -118,14 +118,14 @@ class ApiService {
           await http.get(
 
         Uri.parse(
-          "$baseUrl/$qr/historial",
+          "$baseUrl/ganado/$qr/historial",
         ),
       );
 
       print("HISTORIAL STATUS: ${response.statusCode}");
       print("HISTORIAL BODY: ${response.body}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
 
         return jsonDecode(
             response.body);
@@ -161,7 +161,7 @@ class ApiService {
           await http.post(
 
         Uri.parse(
-            "$baseUrl/$qr/vacuna"),
+            "$baseUrl/ganado/$qr/vacuna"),
 
         headers: {
           "Content-Type":
@@ -179,7 +179,7 @@ class ApiService {
       print("VACUNA STATUS: ${response.statusCode}");
       print("VACUNA BODY: ${response.body}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
 
         print("Vacuna guardada");
 
@@ -218,7 +218,7 @@ class ApiService {
           await http.post(
 
         Uri.parse(
-            "$baseUrl/$qr/revision"),
+            "$baseUrl/ganado/$qr/revision"),
 
         headers: {
           "Content-Type":
@@ -236,7 +236,7 @@ class ApiService {
       print("REVISION STATUS: ${response.statusCode}");
       print("REVISION BODY: ${response.body}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
 
         print(
             "Revision guardada");
@@ -268,7 +268,7 @@ class ApiService {
 ) async {
 
   final url =
-      Uri.parse("$baseUrl/$codigoQR/peso");
+      Uri.parse("$baseUrl/ganado/$codigoQR/peso");
 
   try {
 
@@ -290,7 +290,7 @@ class ApiService {
     print(response.statusCode);
     print(response.body);
 
-    return response.statusCode == 200;
+    return response.statusCode >= 200 && response.statusCode < 300;
 
   } catch (e) {
 
