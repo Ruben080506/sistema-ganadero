@@ -7,18 +7,32 @@ class ApiService {
   static const String baseUrl = "http://192.168.100.17:8000/ganado";
 
   // =========================================================
-  // 1. OBTENER TODO EL GANADO DESDE MONGODB (GET /ganado)
+  // 1. OBTENER TODO EL GANADO
   // =========================================================
 
   Future<List<Animal>> obtenerTodoElGanado() async {
     try {
       final response = await http.get(Uri.parse("$baseUrl/ganado/"));
 
+      print("STATUS: ${response.statusCode}");
+
       if (response.statusCode == 200) {
         List<dynamic> body = jsonDecode(response.body);
 
-        return body.map((item) => Animal.fromMap(item)).toList();
+        print("BODY RECIBIDO:");
+        print(response.body);
+
+        List<dynamic> body =
+            jsonDecode(response.body);
+
+        return body
+            .map((item) =>
+                Animal.fromMap(item))
+            .toList();
       }
+
+      print("ERROR SERVER:");
+      print(response.body);
 
       return [];
     } catch (e) {
@@ -29,7 +43,7 @@ class ApiService {
   }
 
   // =========================================================
-  // 2. SINCRONIZAR ANIMALES (POST /ganado/sync)
+  // 2. SINCRONIZAR
   // =========================================================
 
   Future<bool> sincronizarConBackend(List<Animal> pendientes) async {
@@ -45,6 +59,9 @@ class ApiService {
 
         body: jsonEncode(data),
       );
+
+      print("SYNC STATUS: ${response.statusCode}");
+      print("SYNC BODY: ${response.body}");
 
       if (response.statusCode == 200) {
         print(">>> Sincronización exitosa <<<");
@@ -63,7 +80,7 @@ class ApiService {
   }
 
   // =========================================================
-  // 3. OBTENER HISTORIAL (GET /ganado/{qr}/historial)
+  // 3. HISTORIAL
   // =========================================================
 
   Future<Map<String, dynamic>?> obtenerHistorial(String qr) async {
@@ -71,6 +88,9 @@ class ApiService {
       final response = await http.get(
         Uri.parse("$baseUrl/ganado/$qr/historial"),
       );
+
+      print("HISTORIAL STATUS: ${response.statusCode}");
+      print("HISTORIAL BODY: ${response.body}");
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -85,7 +105,7 @@ class ApiService {
   }
 
   // =========================================================
-  // 4. REGISTRAR VACUNA (POST /ganado/{qr}/vacuna)
+  // 4. VACUNA
   // =========================================================
 
   Future<bool> registrarVacuna(String qr, String nombre, String dosis) async {
@@ -97,6 +117,9 @@ class ApiService {
 
         body: jsonEncode({"tipo": nombre, "dosis": dosis}),
       );
+
+      print("VACUNA STATUS: ${response.statusCode}");
+      print("VACUNA BODY: ${response.body}");
 
       if (response.statusCode == 200) {
         print("Vacuna guardada");
@@ -115,7 +138,7 @@ class ApiService {
   }
 
   // =========================================================
-  // 5. REGISTRAR REVISION (POST /ganado/{qr}/revision)
+  // 5. REVISION
   // =========================================================
 
   Future<bool> registrarRevision(String qr, String obs, String estado) async {
@@ -127,6 +150,9 @@ class ApiService {
 
         body: jsonEncode({"observaciones": obs, "estado_salud": estado}),
       );
+
+      print("REVISION STATUS: ${response.statusCode}");
+      print("REVISION BODY: ${response.body}");
 
       if (response.statusCode == 200) {
         print("Revision guardada");
@@ -143,4 +169,47 @@ class ApiService {
       return false;
     }
   }
+
+
+  // =========================================================
+  // 6. ACTUALIZAR PESO (AÑADIDO)
+  // =========================================================
+
+  Future<bool> actualizarPeso(
+  String codigoQR,
+  double peso,
+) async {
+
+  final url =
+      Uri.parse("$baseUrl/$codigoQR/peso");
+
+  try {
+
+    final response =
+        await http.put(
+
+      url,
+
+      headers: {
+        "Content-Type":
+            "application/json"
+      },
+
+      body: jsonEncode({
+        "peso": peso,
+      }),
+    );
+
+    print(response.statusCode);
+    print(response.body);
+
+    return response.statusCode == 200;
+
+  } catch (e) {
+
+    print(e);
+    return false;
+  }
+}
+
 }
