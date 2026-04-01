@@ -3,27 +3,21 @@ import 'package:http/http.dart' as http;
 import '../models/animal_models.dart';
 
 class ApiService {
-
-  static const String baseUrl =
-      "http://192.168.100.17:8000/ganado";
-
+  // ✅ IP de tu backend FastAPI
+  static const String baseUrl = "http://192.168.100.17:8000/ganado";
 
   // =========================================================
   // 1. OBTENER TODO EL GANADO
   // =========================================================
 
   Future<List<Animal>> obtenerTodoElGanado() async {
-
     try {
-
-      final response =
-          await http.get(
-        Uri.parse(baseUrl),
-      );
+      final response = await http.get(Uri.parse("$baseUrl/ganado/"));
 
       print("STATUS: ${response.statusCode}");
 
       if (response.statusCode == 200) {
+        List<dynamic> body = jsonDecode(response.body);
 
         print("BODY RECIBIDO:");
         print(response.body);
@@ -41,39 +35,27 @@ class ApiService {
       print(response.body);
 
       return [];
-
     } catch (e) {
-
-      print(
-          "Error al conectar con el servidor: $e");
+      print("Error al conectar con el servidor: $e");
 
       return [];
     }
   }
 
-
   // =========================================================
   // 2. SINCRONIZAR
   // =========================================================
 
-  Future<bool> sincronizarConBackend(
-      List<Animal> pendientes) async {
-
+  Future<bool> sincronizarConBackend(List<Animal> pendientes) async {
     try {
-
-      List<Map<String, dynamic>> data =
-          pendientes
-              .map((a) => a.toMap())
-              .toList();
+      List<Map<String, dynamic>> data = pendientes
+          .map((a) => a.toMap())
+          .toList();
 
       final response = await http.post(
+        Uri.parse("$baseUrl/ganado/sync"),
 
-        Uri.parse("$baseUrl/sync"),
-
-        headers: {
-          "Content-Type":
-              "application/json"
-        },
+        headers: {"Content-Type": "application/json"},
 
         body: jsonEncode(data),
       );
@@ -82,176 +64,107 @@ class ApiService {
       print("SYNC BODY: ${response.body}");
 
       if (response.statusCode == 200) {
-
-        print(
-            ">>> Sincronización exitosa <<<");
+        print(">>> Sincronización exitosa <<<");
 
         return true;
-
       } else {
-
-        print(
-            "Error servidor: ${response.body}");
+        print("Error servidor: ${response.body}");
 
         return false;
       }
-
     } catch (e) {
-
       print("Error red: $e");
 
       return false;
     }
   }
 
-
   // =========================================================
   // 3. HISTORIAL
   // =========================================================
 
-  Future<Map<String, dynamic>?>
-      obtenerHistorial(String qr) async {
-
+  Future<Map<String, dynamic>?> obtenerHistorial(String qr) async {
     try {
-
-      final response =
-          await http.get(
-
-        Uri.parse(
-          "$baseUrl/$qr/historial",
-        ),
+      final response = await http.get(
+        Uri.parse("$baseUrl/ganado/$qr/historial"),
       );
 
       print("HISTORIAL STATUS: ${response.statusCode}");
       print("HISTORIAL BODY: ${response.body}");
 
       if (response.statusCode == 200) {
-
-        return jsonDecode(
-            response.body);
+        return jsonDecode(response.body);
       }
 
       return null;
-
     } catch (e) {
-
-      print(
-          "Error historial: $e");
+      print("Error historial: $e");
 
       return null;
     }
   }
 
-
   // =========================================================
   // 4. VACUNA
   // =========================================================
 
-  Future<bool> registrarVacuna(
-
-    String qr,
-    String nombre,
-    String dosis,
-
-  ) async {
-
+  Future<bool> registrarVacuna(String qr, String nombre, String dosis) async {
     try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/ganado/$qr/vacuna"),
 
-      final response =
-          await http.post(
+        headers: {"Content-Type": "application/json"},
 
-        Uri.parse(
-            "$baseUrl/$qr/vacuna"),
-
-        headers: {
-          "Content-Type":
-              "application/json"
-        },
-
-        body: jsonEncode({
-
-          "tipo": nombre,
-          "dosis": dosis,
-
-        }),
+        body: jsonEncode({"tipo": nombre, "dosis": dosis}),
       );
 
       print("VACUNA STATUS: ${response.statusCode}");
       print("VACUNA BODY: ${response.body}");
 
       if (response.statusCode == 200) {
-
         print("Vacuna guardada");
 
         return true;
-
       } else {
+        print("Error vacuna: ${response.body}");
 
         return false;
       }
-
     } catch (e) {
-
-      print(
-          "Error red vacuna: $e");
+      print("Error red vacuna: $e");
 
       return false;
     }
   }
 
-
   // =========================================================
   // 5. REVISION
   // =========================================================
 
-  Future<bool> registrarRevision(
-
-    String qr,
-    String obs,
-    String estado,
-
-  ) async {
-
+  Future<bool> registrarRevision(String qr, String obs, String estado) async {
     try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/ganado/$qr/revisión"),
 
-      final response =
-          await http.post(
+        headers: {"Content-Type": "application/json"},
 
-        Uri.parse(
-            "$baseUrl/$qr/revision"),
-
-        headers: {
-          "Content-Type":
-              "application/json"
-        },
-
-        body: jsonEncode({
-
-          "observaciones": obs,
-          "estado_salud": estado,
-
-        }),
+        body: jsonEncode({"observaciones": obs, "estado_salud": estado}),
       );
 
       print("REVISION STATUS: ${response.statusCode}");
       print("REVISION BODY: ${response.body}");
 
       if (response.statusCode == 200) {
-
-        print(
-            "Revision guardada");
+        print("Revision guardada");
 
         return true;
-
       } else {
+        print("Error revision: ${response.body}");
 
         return false;
       }
-
     } catch (e) {
-
-      print(
-          "Error red revision: $e");
+      print("Error red revision: $e");
 
       return false;
     }
